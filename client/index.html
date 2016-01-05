@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            html,body{
+                background:#c1c1c1;
+            }
+            #chatbox{
+                width:320px;
+                padding:3px 0px;
+            }
+            #thread{
+                background:#fff;
+                border:2px solid gray;
+                padding:5px;
+                height:50px;
+                overflow:auto;
+            }
+            #thread > div{
+                font-size:12px;
+                font-family:'Myriad Pro',Arial,sans-serif;
+            }
+            div.disconnect{
+                font-style:italic;
+                padding:2px;
+                color:gray;
+            }
+            form{
+                display:block;
+                padding:3px 0px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="game"></div>
+        <div id="chatbox">
+            <div id="thread"></div>
+            <form>
+                <input id="message" placeholder="Message">
+                <button type="submit">Send</button>
+            </form>
+        </div>
+
+        <script src="assets/js/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="assets/js/phaser.min.js"></script>
+        <script src="assets/js/game.js"></script>
+        <script>
+            var socketMessage = io.connect();
+            socketMessage.on('connect',function(){
+                
+            });
+            socketMessage.on('update',function(data){
+                $('#thread').append('<div><b><i>'+String(data.name || 'Anonymous')+'</i>:</b> '+data.message+'</div>')
+                .scrollTop($('#thread')[0].scrollHeight);
+                
+            });
+            socketMessage.on('leave',function(name){
+                $('#thread').append('<div class="disconnect"><b>'+String((typeof users[name] != 'undefined' ? users[name].nameLabel.text : 'Anonymous') || 'Anonymous')+' </b> has been disconnected.</div>');
+            });
+            
+            $('form').submit(function(e){
+                e.preventDefault();
+                socketMessage.emit('send',{
+                    name    :playerName,
+                    message :$('#message').val()
+                });
+                $('#message').val('');
+            });
+        </script>
+    </body>
+</html>
